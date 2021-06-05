@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/way0218/way/logger"
 )
 
@@ -26,25 +27,24 @@ type testData struct {
 }
 
 func TestServer(t *testing.T) {
+	fn := gin.HandlerFunc(func(c *gin.Context) {
+		c.JSON(200, &testData{Path: c.Request.RequestURI})
+		return
+	})
 	logger := logger.NewLogger(logger.WithConsoleEncoder())
 	srv := NewServer(Logger(logger))
 	router := srv.Router()
 
-	router.HandleFunc("/test", HealthCheckHandler)
-	router.HandleFunc("/test/index?a=1&b=2", HealthCheckHandler)
-	router.HandleFunc("/test/home", HealthCheckHandler)
-	router.HandleFunc("/test/products/:id", HealthCheckHandler)
-
-	// group := router.Group("/test")
-	// {
-	// 	group.GET("/", fn)
-	// 	group.HEAD("/index?a=1&b=2", fn)
-	// 	group.OPTIONS("/home", fn)
-	// 	group.PUT("/products/:id", fn)
-	// 	group.POST("/products/:id", fn)
-	// 	group.PATCH("/products/:id", fn)
-	// 	group.DELETE("/products/:id", fn)
-	// }
+	group := router.Group("/test")
+	{
+		group.GET("/", fn)
+		group.HEAD("/index?a=1&b=2", fn)
+		group.OPTIONS("/home", fn)
+		group.PUT("/products/:id", fn)
+		group.POST("/products/:id", fn)
+		group.PATCH("/products/:id", fn)
+		group.DELETE("/products/:id", fn)
+	}
 
 	time.AfterFunc(time.Second, func() {
 		defer srv.Stop()

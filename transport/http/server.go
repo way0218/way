@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/way0218/way/logger"
 	"github.com/way0218/way/transport"
 	"go.uber.org/zap"
@@ -23,7 +24,7 @@ type Server struct {
 	network  string
 	address  string
 	timeout  time.Duration
-	router   *http.ServeMux
+	router   *gin.Engine
 	logger   *zap.Logger
 }
 
@@ -36,7 +37,7 @@ func NewServer(opts ...ServerOption) *Server {
 		network: "tcp",
 		address: ":0",
 		timeout: DefaultTimeout,
-		router:  http.NewServeMux(),
+		router:  gin.New(),
 		logger:  logger.NewLogger(),
 	}
 	for _, opt := range opts {
@@ -70,7 +71,7 @@ func Logger(logger *zap.Logger) ServerOption {
 	}
 }
 
-func Router(router *http.ServeMux) ServerOption {
+func Router(router *gin.Engine) ServerOption {
 	return func(server *Server) {
 		server.router = router
 	}
@@ -105,6 +106,6 @@ func (s *Server) Stop() error {
 	return s.Shutdown(ctx)
 }
 
-func (s *Server) Router() *http.ServeMux {
+func (s *Server) Router() *gin.Engine {
 	return s.router
 }
